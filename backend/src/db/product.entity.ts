@@ -6,14 +6,14 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column('decimal', { scale: 2 })
-  priceUsd: number;
+  price: number;
 
   @Column()
-  expirationDate: Date;
+  expiration: Date;
 
   @OneToMany(() => ExchangeRate, (rate) => rate.product, {
     cascade: true,
