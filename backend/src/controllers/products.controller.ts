@@ -7,7 +7,7 @@ export class ProductsController {
   constructor(private readonly productService: ProductsService) {}
 
   @Post()
-  async create(@Body() data: any): Promise<Product> {
+  async create(@Body() data: any): Promise<Product | undefined> {
     return this.productService.createProduct(data);
   }
 }
