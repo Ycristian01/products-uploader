@@ -6,7 +6,7 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column('decimal', { scale: 2 })

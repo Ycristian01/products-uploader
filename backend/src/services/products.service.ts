@@ -7,23 +7,23 @@ import { CreateProductDto } from 'src/dtos/product.dto';
 import { formatDateToISO } from 'src/helpers/date.helper';
 import { ParsedProductsResponseI } from 'src/interfaces/parsed-products-response.interface';
 import { Repository } from 'typeorm';
+import { ExchangeRatesService } from './exchange-rates.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productRepo: Repository<Product>,
+    private exchangeRatesService: ExchangeRatesService,
   ) {}
 
   async createProduct(body: CreateProductDto): Promise<Product | undefined> {
     try {
-      const productExists = await this.productRepo.existsBy({
-        name: body.name,
-      });
-      if (productExists) return;
       const product = this.productRepo.create(body);
-      // TODO: create exchange-rate relations
-      return await this.productRepo.save(product);
+      const createdProduct = await this.productRepo.save(product);
+
+      await this.exchangeRatesService.createExchangeRates(createdProduct);
+      return createdProduct;
     } catch (err) {
       console.warn(`Could not store product ${body.name}. Error:`, err.message);
     }
@@ -45,7 +45,7 @@ export class ProductsService {
 
         const errors = validateSync(dto);
         if (errors.length > 0) {
-          console.warn('Invalid product skipped:', rp, errors);
+          console.warn('Invalid product skipped:', rp, errors[0].constraints);
           continue;
         }
 

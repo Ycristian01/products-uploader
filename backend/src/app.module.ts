@@ -1,3 +1,4 @@
+import { ExchangeHttpService } from './services/exchange-http.service';
 import { UploadProductsController } from './controllers/upload-products.controller';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -12,9 +13,11 @@ import { ProductsController } from './controllers/products.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { UploadProductsService } from './services/upload-products.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads',
@@ -39,6 +42,7 @@ import { UploadProductsService } from './services/upload-products.service';
   ],
   controllers: [AppController, ProductsController, UploadProductsController],
   providers: [
+    ExchangeHttpService,
     AppService,
     ProductsService,
     ExchangeRatesService,
