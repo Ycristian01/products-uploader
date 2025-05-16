@@ -1,10 +1,12 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExchangeRate } from '../db/exchange-rate.entity';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Product } from 'src/db/product.entity';
 import { ExchangeHttpService } from './exchange-http.service';
 import { roundToTwo } from 'src/helpers/math.helper';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { isEmpty } from 'src/helpers/object.helper';
 
 @Injectable()
 export class ExchangeRatesService {
@@ -12,11 +14,12 @@ export class ExchangeRatesService {
     @InjectRepository(ExchangeRate)
     private exchangeRateRepo: Repository<ExchangeRate>,
     private exchangeHttpService: ExchangeHttpService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async createExchangeRates(product: Product): Promise<any> {
-    const currencies = await this.exchangeHttpService.fetchAPI(); // TODO: implement cache settings
-    const storedRates: ExchangeRate[] = [];
+  async createExchangeRates(product: Product): Promise<void> {
+    let currencies =
+      await this.cacheManager.get<Record<string, number>>('currencies');
 
     for (const cur in currencies) {
       try {
@@ -26,8 +29,7 @@ export class ExchangeRatesService {
           product,
         });
 
-        const createdRate = await this.exchangeRateRepo.save(rate);
-        storedRates.push(createdRate);
+        await this.exchangeRateRepo.save(rate);
       } catch (err) {
         console.warn(
           `Could not store exchange rate with currency: ${cur}. Error:`,
@@ -35,5 +37,16 @@ export class ExchangeRatesService {
         );
       }
     }
+  }
+
+  async loadCacheCurrencies(): Promise<Record<string, number>> {
+    let currencies =
+      await this.cacheManager.get<Record<string, number>>('currencies');
+    if (!currencies || isEmpty(currencies)) {
+      currencies = await this.exchangeHttpService.fetchAPI();
+      await this.cacheManager.set('currencies', currencies, 100000);
+    }
+
+    return currencies;
   }
 }
