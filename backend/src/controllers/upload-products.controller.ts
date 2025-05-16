@@ -1,3 +1,4 @@
+import { ExchangeRatesService } from 'src/services/exchange-rates.service';
 import {
   Controller,
   HttpException,
@@ -18,6 +19,7 @@ export class UploadProductsController {
   constructor(
     private readonly productsUploadService: UploadProductsService,
     private readonly productsService: ProductsService,
+    private readonly exchangeRateService: ExchangeRatesService,
   ) {}
 
   @Post()
@@ -28,7 +30,10 @@ export class UploadProductsController {
     try {
       const data = await this.productsUploadService.handleFileUpload(file);
 
-      const validProducts = await this.productsService.parseProducts(data);
+      const [validProducts] = await Promise.all([
+        this.productsService.parseProducts(data),
+        this.exchangeRateService.loadCacheCurrencies(),
+      ]);
 
       let storedProducts = await Promise.all(
         validProducts.map((vp) => this.productsService.createProduct(vp)),
@@ -43,7 +48,6 @@ export class UploadProductsController {
         message: `File uploaded and processed successfully. Total products stored: ${storedProducts.length}`,
       };
     } catch (err) {
-      console.error('Error processing file:', err);
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

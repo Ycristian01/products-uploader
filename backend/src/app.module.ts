@@ -14,6 +14,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { UploadProductsService } from './services/upload-products.service';
 import { HttpModule } from '@nestjs/axios';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -39,6 +40,11 @@ import { HttpModule } from '@nestjs/axios';
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Product, ExchangeRate]),
+    CacheModule.register({
+      ttl: 10000,
+      max: 10,
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController, ProductsController, UploadProductsController],
   providers: [
