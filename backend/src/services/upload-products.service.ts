@@ -19,8 +19,8 @@ export class UploadProductsService {
   ): Promise<ParsedProductsResponseI[]> {
     if (!file) throw new BadRequestException(MISSING_FILE_MSG);
 
-    if (file.mimetype !== 'application/octet-stream')
-      throw new BadRequestException('invalid file type');
+    if (file.mimetype !== 'text/csv')
+      throw new BadRequestException('Invalid file type');
 
     return this.parseFile(file.path);
   }
