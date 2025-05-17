@@ -45,7 +45,7 @@ export class UploadProductsController {
 
       return {
         status: 200,
-        message: `File uploaded and processed successfully. Total products stored: ${storedProducts.length}`,
+        message: `File uploaded and processed. Total products stored: ${storedProducts.length}`,
       };
     } catch (err) {
       throw new HttpException(
