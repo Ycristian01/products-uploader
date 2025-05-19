@@ -1,9 +1,11 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
-import { Box, Button, Collapse, Container, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Dialog, DialogContent, DialogTitle, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import type ProductI from "../interfaces/product.interface";
 import CustomRow from "./custom-row";
+import { AddCircleOutline } from "@mui/icons-material";
+import UploadForm from "./upload-form";
+import { useDebounce } from "../utils/use-debounce";
 
 export default function ProductsTable() {
   const [products, setProducts] = useState<ProductI[]>([]);
@@ -17,6 +19,14 @@ export default function ProductsTable() {
   const [maxExpiration, setMaxExpiration] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+
+  const debouncedName = useDebounce(name, 400);
+  const debouncedMinPrice = useDebounce(minPrice, 400);
+  const debouncedMaxPrice = useDebounce(maxPrice, 400);
+  const debouncedMinExpiration = useDebounce(minExpiration, 400);
+  const debouncedMaxExpiration = useDebounce(maxExpiration, 400);
+  
   const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
 
   function fetchProducts(currentPage = page, currentLimit = limit) {
@@ -24,11 +34,11 @@ export default function ProductsTable() {
       params: {
         page: currentPage + 1,
         limit: currentLimit,
-        name,
-        minPrice,
-        maxPrice,
-        minExpiration,
-        maxExpiration,
+        name: debouncedName,
+        minPrice: debouncedMinPrice,
+        maxPrice: debouncedMaxPrice,
+        minExpiration: debouncedMinExpiration,
+        maxExpiration: debouncedMaxExpiration,
         sortBy: sortBy == 'None' ? '' : sortBy,
         order,
       }
@@ -45,11 +55,11 @@ export default function ProductsTable() {
   }, [
     page,
     limit,
-    name,
-    minPrice,
-    maxPrice,
-    minExpiration,
-    maxExpiration,
+    debouncedName,
+    debouncedMinPrice,
+    debouncedMaxPrice,
+    debouncedMinExpiration,
+    debouncedMaxExpiration,
     sortBy,
     order,
   ]);
@@ -65,9 +75,16 @@ export default function ProductsTable() {
 
   return (
     <Container sx={{ width: '100%' }}>
-      <Typography variant="h4" gutterBottom>
-        Product List
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Product List</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddCircleOutline />}
+          onClick={() => setUploadModalOpen(true)}
+        >
+          Upload Products
+        </Button>
+      </Box>
       <Paper
         elevation={3}
         sx={{
@@ -184,6 +201,14 @@ export default function ProductsTable() {
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleLimit}
         />
+        <Dialog open={uploadModalOpen} onClose={() => setUploadModalOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ textAlign: 'center' }}>Upload Products</DialogTitle>
+          <DialogContent>
+            <UploadForm onUploadSuccess={() => {
+              fetchProducts();
+            }}/>
+          </DialogContent>
+        </Dialog>
       </Paper>
     </Container>
   )

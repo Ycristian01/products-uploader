@@ -1,9 +1,9 @@
-import { Box, Button, Container, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography } from '@mui/material';
 import { CheckCircleOutlineOutlined, CloudUploadRounded, ErrorOutlineOutlined } from '@mui/icons-material';
 import { useState } from 'react';
 import axios from 'axios';
 
-export default function UploadForm() {
+export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -25,18 +25,19 @@ export default function UploadForm() {
       const response = await axios.post(`${backendBaseUrl}/upload-products`, formData, {
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
-            console.log('progressEvent', progressEvent)
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            console.log('percentCompleted', percentCompleted)
             setUploadProgress(percentCompleted);
           }
         }, 
       });
       setUploadMessage(response.data?.message);
       setUploadComplete(true);
+      setTimeout(() => {
+        if (onUploadSuccess) onUploadSuccess();
+      }, 1000);
     } catch (error: any) {
-      console.error('Error uploading file:', error.response.data.error);
-      setUploadError(error.response.data.error);
+      console.error('Error uploading file:', error.response.data.message);
+      setUploadError(error.response.data.message);
     }
   };
 
@@ -48,23 +49,13 @@ export default function UploadForm() {
   }
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: 3,
-          borderRadius: 2,
-          boxShadow: 3,
-          backgroundColor: 'background.paper',
-        }}
-      >
-        <Typography component="h1" variant="h5" color='black' gutterBottom>
-          Upload products
-        </Typography>
-        <form style={{ width: '100%' }} onSubmit={handleFileUpload}>
+    <Box
+      sx={{
+        padding: 3,
+      }}
+    >
+      <form style={{ width: '100%' }} onSubmit={handleFileUpload}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', mb: 2 }}>
           <TextField
             type="file"
             variant="outlined"
@@ -82,7 +73,8 @@ export default function UploadForm() {
           >
             Upload
           </Button>
-          {uploadProgress > 0 && uploadProgress < 100 && (
+        </Box>
+        {uploadProgress > 0 && uploadProgress < 100 && (
             <Typography variant="body2" color="textSecondary">
               Upload Progress: {uploadProgress}%
             </Typography>
@@ -97,8 +89,7 @@ export default function UploadForm() {
               {uploadError} <ErrorOutlineOutlined sx={{ ml: 1 }} />
             </Typography>
           )}
-        </form>
-      </Box>
-    </Container>
+      </form>
+    </Box>
   );
 }

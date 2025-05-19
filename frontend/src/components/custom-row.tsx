@@ -18,7 +18,7 @@ export default function CustomRow({ product }: CustomRowProps) {
 
   return (
     <>
-      <TableRow>
+      <TableRow key={product.id}>
         <TableCell>
           <IconButton size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
