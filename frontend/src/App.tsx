@@ -1,4 +1,5 @@
 import './App.css'
+import ProductsTable from './components/producs-table'
 import UploadForm from './components/upload-form'
 
 function App() {
@@ -6,7 +7,8 @@ function App() {
   return (
     <>
       <div>
-        <UploadForm />
+        {/* <UploadForm /> */}
+        <ProductsTable />
       </div>
     </>
   )

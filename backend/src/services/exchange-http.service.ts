@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import {

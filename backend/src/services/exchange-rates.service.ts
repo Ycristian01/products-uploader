@@ -18,7 +18,7 @@ export class ExchangeRatesService {
   ) {}
 
   async createExchangeRates(product: Product): Promise<void> {
-    let currencies =
+    const currencies =
       await this.cacheManager.get<Record<string, number>>('currencies');
 
     for (const cur in currencies) {
@@ -30,10 +30,10 @@ export class ExchangeRatesService {
         });
 
         await this.exchangeRateRepo.save(rate);
-      } catch (err) {
+      } catch (err: any) {
         console.warn(
           `Could not store exchange rate with currency: ${cur}. Error:`,
-          err.message,
+          err?.message,
         );
       }
     }

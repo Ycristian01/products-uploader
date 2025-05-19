@@ -8,7 +8,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UNPROCESSED_FILE_MSG } from 'src/common/constants/errors-messages.constants';
 import { Product } from 'src/db/product.entity';
 import { JsonApiResponse } from 'src/interfaces/json-response.interface';
 import { ProductsService } from 'src/services/products.service';
@@ -47,12 +46,11 @@ export class UploadProductsController {
         status: 200,
         message: `File uploaded and processed. Total products stored: ${storedProducts.length}`,
       };
-    } catch (err) {
+    } catch (err: any) {
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: UNPROCESSED_FILE_MSG,
-          error: err.message,
+          message: err?.message || 'Failed to retrieve products',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
