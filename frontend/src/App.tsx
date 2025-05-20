@@ -1,5 +1,5 @@
 import './App.css'
-import ProductsTable from './components/producs-table'
+import ProductsTable from './components/products-table'
 
 function App() {
 
