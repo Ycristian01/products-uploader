@@ -21,6 +21,11 @@ export class ExchangeHttpService {
     process.env.EXCHANGE_API_FALLBACK,
   ];
 
+  /**
+   * Fetches exchange rates for the supported currencies relative to the default currency (USD).
+   *
+   * @returns A record of supported currency codes and their corresponding exchange rates.
+   */
   async fetchAPI(): Promise<Record<string, number>> {
     const currencies = await this.loadCurrencies();
     const supportedCurrencies = await this.getSupportedCurrencies(currencies);
@@ -28,6 +33,11 @@ export class ExchangeHttpService {
     return supportedCurrencies;
   }
 
+  /**
+   * Attempts to load exchange rate data from available base URLs and fallback paths.
+   *
+   * @returns A record of all fetched exchange rates, or an empty object if all attempts fail.
+   */
   private async loadCurrencies(): Promise<Record<string, number>> {
     for (const baseUrl of this.baseUrls) {
       for (const suffix of this.fallbackPaths) {
@@ -47,6 +57,12 @@ export class ExchangeHttpService {
     return {};
   }
 
+  /**
+   * Fetches currency data from a specific API URL.
+   *
+   * @param url - The full URL to request currency data from.
+   * @returns A record of currency exchange rates, or an empty object on failure.
+   */
   private async fetchAllCurrencies(
     url: string,
   ): Promise<Record<string, number>> {
@@ -63,6 +79,12 @@ export class ExchangeHttpService {
     }
   }
 
+  /**
+   * Filters the full exchange rate data to return only the supported currencies.
+   *
+   * @param currencies - A record of all fetched exchange rates.
+   * @returns A filtered record with only supported currency codes and their rates.
+   */
   private async getSupportedCurrencies(
     currencies: Record<string, number>,
   ): Promise<Record<string, number>> {

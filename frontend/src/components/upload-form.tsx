@@ -1,20 +1,21 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, LinearProgress, TextField, Typography } from '@mui/material';
 import { CheckCircleOutlineOutlined, CloudUploadRounded, ErrorOutlineOutlined } from '@mui/icons-material';
 import { useState } from 'react';
 import axios from 'axios';
 
 export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [showProgressbar, setShowProgressbar] = useState(false);
   const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleFileUpload = async (event: any) => {
     event.preventDefault();
-    setUploadProgress(0);
     setUploadComplete(false);
     setUploadError(null);
+
+    setShowProgressbar(true);
 
     const formData = new FormData();
     const file = event.target.elements.fileInput.files[0];
@@ -22,30 +23,27 @@ export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () =
     
 
     try {
-      const response = await axios.post(`${backendBaseUrl}/upload-products`, formData, {
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percentCompleted);
-          }
-        }, 
-      });
-      setUploadMessage(response.data?.message);
-      setUploadComplete(true);
+      await axios.post(`${backendBaseUrl}/upload-products`, formData)
+        .then(res => {
+          setUploadMessage(res.data?.message);
+          setUploadComplete(true);
+          setShowProgressbar(false);
+        });
       setTimeout(() => {
         if (onUploadSuccess) onUploadSuccess();
       }, 1000);
     } catch (error: any) {
       console.error('Error uploading file:', error.response.data.message);
       setUploadError(error.response.data.message);
+      setShowProgressbar(false);
     }
   };
 
   const handleFileChange = async () => {
-    setUploadProgress(0);
     setUploadComplete(false);
     setUploadError(null);
     setUploadMessage(null);
+    setShowProgressbar(false);
   }
 
   return (
@@ -74,21 +72,19 @@ export default function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () =
             Upload
           </Button>
         </Box>
-        {uploadProgress > 0 && uploadProgress < 100 && (
-            <Typography variant="body2" color="textSecondary">
-              Upload Progress: {uploadProgress}%
-            </Typography>
-          )}
-          {uploadComplete && (
-            <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center' }}>
-              {uploadMessage} <CheckCircleOutlineOutlined sx={{ ml: 1 }} />
-            </Typography>
-          )}
-          {uploadError && (
-            <Typography variant="body2" color="error" sx={{ display: 'flex', alignItems: 'center' }}>
-              {uploadError} <ErrorOutlineOutlined sx={{ ml: 1 }} />
-            </Typography>
-          )}
+        {showProgressbar && (
+         <LinearProgress color="success" />
+        )}
+        {uploadComplete && (
+          <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center' }}>
+            {uploadMessage} <CheckCircleOutlineOutlined sx={{ ml: 1 }} />
+          </Typography>
+        )}
+        {uploadError && (
+          <Typography variant="body2" color="error" sx={{ display: 'flex', alignItems: 'center' }}>
+            {uploadError} <ErrorOutlineOutlined sx={{ ml: 1 }} />
+          </Typography>
+        )}
       </form>
     </Box>
   );

@@ -19,6 +19,13 @@ export class ProductsService {
     private exchangeRatesService: ExchangeRatesService,
   ) {}
 
+  /**
+   * Stores a new product in the database.
+   * Also triggers the creation of 5 associated exchange rates.
+   *
+   * @param body - The product data (name, price, expiration) as a DTO.
+   * @returns The created product, or `undefined` if an error occurs.
+   */
   async createProduct(body: CreateProductDto): Promise<Product | undefined> {
     try {
       const product = this.productRepo.create(body);
@@ -34,6 +41,13 @@ export class ProductsService {
     }
   }
 
+  /**
+   * Parses an array of raw product inputs from the CSV file into validated DTOs.
+   * Invalid entries are skipped.
+   *
+   * @param rawProducts - Raw product data from the extracted csv. Can contains invalid data.
+   * @returns An array of valid `CreateProductDto` instances ready for saving.
+   */
   async parseProducts(
     rawProducts: ParsedProductsResponseI[],
   ): Promise<CreateProductDto[]> {
@@ -63,6 +77,14 @@ export class ProductsService {
     return validProducts;
   }
 
+  /**
+   * Retrieves and filters products from the database.
+   * Supports pagination, name/price/expiration filters, and sorting.
+   * Also includes related exchange-rates in the result.
+   *
+   * @param filters - Optional filters and pagination parameters.
+   * @returns A paginated list of filtered products with exchange-rate data.
+   */
   async findAndFilterProducts(
     filters: FilterProductsDto,
   ): Promise<FilteredProductsI> {

@@ -17,6 +17,12 @@ export class ExchangeRatesService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  /**
+   * Creates and stores exchange rates for a given product in all supported currencies.
+   * Rates are calculated based on the product's price and the cached exchange rates.
+   *
+   * @param product - The product entity for which exchange rates should be created.
+   */
   async createExchangeRates(product: Product): Promise<void> {
     const currencies =
       await this.cacheManager.get<Record<string, number>>('currencies');
@@ -39,6 +45,12 @@ export class ExchangeRatesService {
     }
   }
 
+  /**
+   * Loads exchange rates from cache. If not found or empty, fetches them from the external API
+   * and stores them in cache for future use.
+   *
+   * @returns A record of currency codes and their exchange rate values.
+   */
   async loadCacheCurrencies(): Promise<Record<string, number>> {
     let currencies =
       await this.cacheManager.get<Record<string, number>>('currencies');

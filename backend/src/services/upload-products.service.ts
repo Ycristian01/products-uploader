@@ -14,6 +14,13 @@ import { ParsedProductsResponseI } from 'src/interfaces/parsed-products-response
 
 @Injectable()
 export class UploadProductsService {
+  /**
+   * Handles the uploaded CSV file: validates it and parses its contents.
+   *
+   * @param file - The uploaded file object (from Multer).
+   * @returns A promise resolving to an array of parsed product objects.
+   * @throws BadRequestException if the file is missing or has an invalid type.
+   */
   async handleFileUpload(
     file: Express.Multer.File,
   ): Promise<ParsedProductsResponseI[]> {
@@ -25,6 +32,13 @@ export class UploadProductsService {
     return this.parseFile(file.path);
   }
 
+  /**
+   * Reads and parses a CSV file from the file system.
+   *
+   * @param filePath - The full path to the CSV file.
+   * @returns Parsed product data from the CSV file.
+   * @throws BadRequestException if the file contents or headers are invalid.
+   */
   private async parseFile(
     filePath: string,
   ): Promise<ParsedProductsResponseI[]> {
@@ -41,6 +55,12 @@ export class UploadProductsService {
     return parsedFile.data;
   }
 
+  /**
+   * Validates the structure and data of the parsed CSV file.
+   *
+   * @param parsedFile - The result of parsing the CSV using `papaparse`.
+   * @throws BadRequestException if the headers are incorrect or data is missing.
+   */
   private async validateFileData(
     parsedFile: ParseResult<ParsedProductsResponseI>,
   ) {
